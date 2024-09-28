@@ -7,6 +7,7 @@
   "scripts": {
     "prepare-demo": "node ./scripts/prepare-demo.js",
     "start": "node ./run.js",
+    "dev": "nodemon ./run.js",
     "test": "tests/main.js"
   },
   "keywords": [],
@@ -16,7 +17,8 @@
     "@types/cookie-parser": "^1.4.7",
     "@types/express": "^5.0.0",
     "@types/multer": "^1.4.12",
-    "eslint": "^9.11.1"
+    "eslint": "^9.11.1",
+    "nodemon": "^3.1.7"
   },
   "dependencies": {
     "bcrypt": "^5.1.1",
