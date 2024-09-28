@@ -1,7 +1,8 @@
 import { Schema } from "mongoose";
+
 import { connection } from "../db.js";
 
-const User = connection.model("User", new Schema({
+const UserSchema = new Schema({
   username: String,
   hash: String, // password hash
   sid: String, // session id
@@ -18,11 +19,11 @@ const User = connection.model("User", new Schema({
   hobbies: String,
   animals: String,
   foods: String,
-}));
+});
 
-export default User;
+export default connection.model("User", UserSchema);
 
-User.method("toJSON", function () {
+UserSchema.method("toJSON", function () {
   const user = this.toObject();
 
   delete user.sid;
