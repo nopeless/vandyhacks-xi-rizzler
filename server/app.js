@@ -1,8 +1,7 @@
 import express from "express";
-import api from "./api.js";
+import api from "./api-route.js";
 
 const app = express();
-const PORT = process.env.PORT ?? 3000;
 
 // for authentication/authorization
 app.use(express.cookieParser());
@@ -15,6 +14,4 @@ app.use(express.static("public"));
 
 app.use("/api", api);
 
-app.listen(PORT, () => {
-  console.log(`Server is running on http://localhost:${PORT}`);
-});
+export default app;

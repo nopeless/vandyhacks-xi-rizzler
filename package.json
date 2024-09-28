@@ -6,7 +6,7 @@
   "main": "server/app.js",
   "scripts": {
     "prepare-demo": "node ./scripts/prepare-demo.js",
-    "start": "node ./server/app.js",
+    "start": "node ./run.js",
     "test": "tests/main.js"
   },
   "keywords": [],
