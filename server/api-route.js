@@ -1,9 +1,10 @@
 import { Router } from "express";
 import multer from "multer";
-import User from "./models/User";
 import asyncHandler from "express-async-handler";
-import { generateSid, hashPassword, validatePassword } from "./crypto";
-import Analysis from "./models/Analysis";
+
+import { generateSid, hashPassword, validatePassword } from "./crypto.js";
+import User from "./models/User.js";
+import Analysis from "./models/Analysis.js";
 
 const router = Router();
 
