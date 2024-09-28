@@ -3,6 +3,7 @@ import multer from "multer";
 import User from "./models/User";
 import asyncHandler from "express-async-handler";
 import { generateSid, hashPassword, validatePassword } from "./crypto";
+import Analysis from "./models/Analysis";
 
 const router = Router();
 
@@ -70,6 +71,10 @@ router.post("/login", asyncHandler(async (req, res) => {
 router.post("/create-user", uploadProfilePicture, asyncHandler(async (req, res) => {
   const { username, password } = req.body;
 
+  const profilePicture = req.file;
+
+  if (!profilePicture) return res.status(400).send("Missing profile picture");
+
   // check username clash
   if (await User.findOne({ username }))
     return res.status(400).send("Username already exists");
@@ -93,7 +98,7 @@ router.post("/create-user", uploadProfilePicture, asyncHandler(async (req, res) 
     sid,
 
     createdAt: Date.now(),
-    profilePicture: null, // TODO
+    profilePicture: "", // TODO
 
     // ... fields
   };
@@ -115,12 +120,58 @@ router.post("/create-user", uploadProfilePicture, asyncHandler(async (req, res) 
   res.redirect("/user");
 }));
 
-router.get("/user-info", (req, res) => {
-  //
-});
+router.get("/user-info", asyncHandler(async (req, res) => {
+  const { username } = req.query;
 
-router.get("/compatibility", (req, res) => {
-  //
-});
+  const user = await User.findOne({ username });
+
+  if (!user) return res.status(404).send(`No user exists with username '${username}'`);
+
+  // Got user, return as json
+
+  res.json(user.toJSON());
+}));
+
+router.get("/users", asyncHandler(async (req, res) => {
+  const limit = 100;
+
+  const count = req.query.count ?? 10;
+
+  if (count > limit) return res.status(400).send(`Request exceeds limit of ${limit} users`);
+
+  const users = await User.aggregate(([{ $sample: { size: count } }]));
+
+  res.json(users.map(u => u.toJSON()));
+}));
+
+router.get("/analysis", asyncHandler(async (req, res) => {
+  // check for authentication
+  const { sid } = req.cookies;
+  const authenticated = sid && await User.findOne({ sid });
+
+  const { actor, interest } = req.query;
+
+  const analysis = await Analysis.findOne({
+    actor,
+    interest,
+  });
+
+  if (analysis) return res.json(analysis.toJSON);
+
+  if (!authenticated) return res.status(403).send("retrieving new analysis requires an account");
+
+  // create an analysis
+
+  const newAnalysis = await Analysis.create({
+    actor,
+    interest,
+    // TODO
+    summary: "<summary>",
+    evaluation: "<evaluation>",
+    rating: 5,
+  });
+
+  res.json(newAnalysis);
+}));
 
 export default router;
