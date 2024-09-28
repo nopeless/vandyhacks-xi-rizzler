@@ -1,4 +1,4 @@
-import bcrypt from "node:bcrypt";
+import bcrypt from "bcrypt";
 import crypto from "node:crypto";
 
 export async function hashPassword(password) {
