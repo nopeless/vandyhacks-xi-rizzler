@@ -1,0 +1,21 @@
+{
+  "name": "vandyhacks-xi-rizzler",
+  "version": "1.0.0",
+  "description": "Tinder-clone with AI abilities",
+  "main": "server/app.js",
+  "scripts": {
+    "prepare-demo": "./scripts/prepare-demo.js",
+    "test": "tests/main.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/express": "^5.0.0",
+    "eslint": "^9.11.1"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.5",
+    "express": "^4.21.0"
+  }
+}

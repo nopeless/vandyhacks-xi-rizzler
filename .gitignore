@@ -1,3 +1,9 @@
+# Project specific
+template
+
+# Editor config
+.vscode
+
 # Logs
 logs
 *.log
