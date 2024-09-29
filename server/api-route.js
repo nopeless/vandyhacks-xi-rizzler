@@ -4,9 +4,10 @@ import { Router } from "express";
 import multer from "multer";
 import asyncHandler from "express-async-handler";
 
-import { generateSid, hashPassword, validatePassword } from "./crypto.js";
+import { generateSid, hashPassword, validatePassword, sha256 } from "./crypto.js";
 import User from "./models/User.js";
 import Analysis from "./models/Analysis.js";
+import { getCompatibilityAnalysis, getSummary } from "./openai.js";
 
 const router = Router();
 
@@ -46,7 +47,6 @@ function setSidCookie(res, sid) {
     maxAage: 14 * 24 * 60 * 60 * 1000, // two weeks
     httpOnly: true,
   });
-
 }
 
 router.post("/login", asyncHandler(async (req, res) => {
@@ -69,6 +69,9 @@ router.post("/login", asyncHandler(async (req, res) => {
 
   setSidCookie(res, sid);
 
+  user.sid = sid;
+  await user.save();
+
   // redirect them to their user page
   res.redirect("/user?signup-success=1");
 }));
@@ -76,18 +79,14 @@ router.post("/login", asyncHandler(async (req, res) => {
 router.post("/logout", asyncHandler(async (req, res) => {
   const sid = req.cookies.sid;
 
-  if (!sid) {
-    return res.status(400).send("No session found");
+  if (sid) {
+    await User.updateOne({ sessionId: sid }, { sessionId: null });
+
+    res.clearCookie("sid", { httpOnly: true });
   }
-
-  await User.updateOne({ sessionId: sid }, { sessionId: null });
-
-  res.clearCookie("sid", { httpOnly: true });
 
   res.redirect("/logged-out");
 }));
-
-
 
 router.post("/create-user", uploadProfilePicture, asyncHandler(async (req, res) => {
   let { username, password } = req.body;
@@ -166,6 +165,21 @@ router.post("/create-user", uploadProfilePicture, asyncHandler(async (req, res) 
   res.redirect("/user");
 }));
 
+router.post("/search", asyncHandler(async (req, res) => {
+  const { query } = req.body;
+
+  if (!query) return res.status(400).send("missing query");
+
+  const result = await User.findOne({
+    $or: [
+      { username: { $regex: query, $options: "i" } }, // case-insensitive regex search
+      { name: { $regex: query, $options: "i" } }
+    ]
+  });
+
+  return res.redirect("/user?pick=" + result.username);
+}));
+
 router.get("/user", asyncHandler(async (req, res) => {
   const { username } = req.query;
 
@@ -183,7 +197,7 @@ router.get("/self", asyncHandler(async (req, res) => {
 
   const user = await User.findOne({ sid });
 
-  return user && user.toJSON();
+  return res.json(user && user.toJSON());
 }));
 
 router.get("/users", asyncHandler(async (req, res) => {
@@ -212,26 +226,49 @@ router.get("/analysis", asyncHandler(async (req, res) => {
 
   let { actor, interest } = req.query;
 
-  if (!actor && user) actor = user;
+  if (actor) user = await User.findOne({ username: actor });
 
-  const analysis = await Analysis.findOne({
+  if (!user) {
+    return res.status(400).send("no user present. either be logged in or specify actor");
+  }
+
+  const target = await User.findOne({ username: interest });
+
+  const hash = sha256(user.toJSON() + target.toJSON());
+
+  let analysis = await Analysis.findOne({
     actor,
     interest,
   });
 
-  if (analysis) return res.json(analysis.toJSON);
+  if (analysis?.hash == hash) {
+    // invalidate
+    await Analysis.deleteOne({ actor, interest });
+    analysis = null;
+  }
+
+  if (analysis) return res.json(analysis.toJSON());
 
   if (!authenticated) return res.status(403).send("retrieving new analysis requires an account");
 
   // create an analysis
+  const compatibilityReport = await getCompatibilityAnalysis(
+    user.toJSON(),
+    target.toJSON(),
+  );
+
+  if (!compatibilityReport) return res.status(500).send("Failed to generate compatibility report");
+
+  const summary = await getSummary(compatibilityReport.analysis, 40);
 
   const newAnalysis = await Analysis.create({
     actor,
     interest,
     // TODO
-    summary: "<summary>",
-    evaluation: "<evaluation>",
+    evaluation: compatibilityReport.analysis,
+    summary: summary,
     rating: 5,
+    hash,
   });
 
   res.json(newAnalysis.toJSON());

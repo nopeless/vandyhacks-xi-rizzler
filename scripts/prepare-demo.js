@@ -4,6 +4,7 @@ import "dotenv/config";
 import User from "../server/models/User.js";
 import { faker } from "@faker-js/faker";
 import { connection } from "../server/db.js";
+import Analysis from "../server/models/Analysis.js";
 
 // generated using GPT
 const personalities = [
@@ -230,6 +231,7 @@ async function generateMockUsers() {
   await User.deleteMany({
     username: { $regex: "^bot_" }
   });
+  await Analysis.deleteMany();
 
   const defaultProfilePicturePath = path.join(process.cwd(), "/public/images/default-profile-picture.jpg");
   const defaultProfilePicture = await fs.readFile(defaultProfilePicturePath);

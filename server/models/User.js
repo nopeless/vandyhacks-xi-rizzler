@@ -21,8 +21,6 @@ const UserSchema = new Schema({
   foods: String,
 });
 
-export default connection.model("User", UserSchema);
-
 UserSchema.method("toJSON", function () {
   const user = this.toObject();
 
@@ -31,3 +29,5 @@ UserSchema.method("toJSON", function () {
 
   return user;
 });
+
+export default connection.model("User", UserSchema);

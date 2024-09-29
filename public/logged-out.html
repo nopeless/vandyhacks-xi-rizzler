@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="/assets/css/main.css" />
+  <title>User page</title>
+</head>
+<body>
+  <div id="wrapper">
+    <header id="header">
+      <h1><a href="index.html">SociAI</a></h1>
+      <nav class="links">
+        <ul>
+          <li><a href="/about">About</a></li>
+          <li><a href="/sign-up">Join</a></li>
+          <li><a href="/#people">People</a></li>
+          <li><a href="/about#tos">Terms of Service</a></li>
+        </ul>
+      </nav>
+      <nav class="main">
+        <ul>
+          <li class="search">
+            <a class="fa-search" href="#search">Search</a>
+            <form id="search" action="/api/search" method="post">
+              <input type="text" name="query" placeholder="Search" />
+            </form>
+          </li>
+          <li class="menu">
+            <a class="fa-bars" href="#menu">Menu</a>
+          </li>
+        </ul>
+      </nav>
+    </header>
+    <section id="menu">
+      <section class="menu-actions">
+        <form id="loginButton" action="/api/login" method="post">
+          <h3>Already have an account?</h3>
+          <div>
+            <input type="text" name="username" id="username" placeholder="Username" required />
+          </div>
+          <div style="width: 100%; height: 10px;"></div>
+          <div>
+            <input type="password" name="password" id="password" placeholder="Password" required />
+          </div>
+          <div style="width: 100%; height: 10px;"></div>
+
+          <button class="button large fit">Log In</button>
+        </form>
+        <form id="logoutButton" action="/api/logout" method="post">
+          <h3></h3>
+          <button class="button large fit">Log Out</button>
+        </form>
+      </section>
+    </section>
+  
+    <h1>You have successfully logged out</h1>
+  
+    <a href="/" class="button large">
+      Home
+    </a>
+  </div>
+
+  <script src="assets/js/jquery.min.js"></script>
+  <script src="assets/js/browser.min.js"></script>
+  <script src="assets/js/util.js"></script>
+  <script src="assets/js/imperfect.js"></script>
+  <script src="assets/js/main.js"></script>
+</body>
+</html>

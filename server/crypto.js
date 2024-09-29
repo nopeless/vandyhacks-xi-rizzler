@@ -15,3 +15,8 @@ export async function validatePassword(password, hash) {
 export async function generateSid() {
   return crypto.randomBytes(16).toString("hex");
 }
+
+export function sha256(s) {
+  return crypto.createHash("sha256").update(s).digest("hex");
+}
+

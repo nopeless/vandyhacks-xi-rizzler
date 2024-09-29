@@ -1,12 +1,10 @@
-import { Configuration, OpenAIApi } from "openai";
+import OpenAI from "openai";
 
 const { OPENAI_API_KEY } = process.env;
 
-const configuration = new Configuration({
+const client = new OpenAI({
   apiKey: OPENAI_API_KEY,
 });
-
-const openai = new OpenAIApi(configuration);
 
 /**
  * messsages: { role: string, content: string }[]
@@ -14,8 +12,8 @@ const openai = new OpenAIApi(configuration);
  * roles: system, user, assistant
  */
 async function chatgpt(messages) {
-  const response = await openai.createChatCompletion({
-    model: "gpt-4",
+  const response = await client.chat.completions.create({
+    model: "gpt-4o-mini",
     messages,
     max_tokens: 500,
   });
@@ -31,13 +29,12 @@ export async function getCompatibilityAnalysis(actor, interest) {
   const messages = [
     {
       role: "system",
-      content: "You are a compatibility analysis assistant."
+      content: "You are a friendly compatibility analysis assistant."
     },
     {
       role: "user",
-      content: `Analyze the compatibility between the following two users and provide a JSON response with 'analysis' (string) and 'rating' (number) between 0-10:
-      User A:
-      - Username: ${actor.username}
+      content: `${actor.name} is asking how ${interest.name} is. Below are their portfolios. Example: You might like their passion for coding. Do not address either person by their names. Use pronouns. Provide a JSON response with 'analysis' (string) and 'rating' (number) between 0-10:
+      ${actor.name}:
       - Age: ${actor.age}
       - Gender: ${actor.gender}
       - Nationality: ${actor.nationality}
@@ -46,8 +43,7 @@ export async function getCompatibilityAnalysis(actor, interest) {
       - Animals: ${actor.animals}
       - Foods: ${actor.foods}
       
-      User B:
-      - Username: ${interest.username}
+      ${interest.name}:
       - Age: ${interest.age}
       - Gender: ${interest.gender}
       - Nationality: ${interest.nationality}
@@ -56,14 +52,18 @@ export async function getCompatibilityAnalysis(actor, interest) {
       - Animals: ${interest.animals}
       - Foods: ${interest.foods}
 
-      Please respond with a JSON object in the format: { "analysis": "your analysis here", "rating": 8 }`
+      Please put your repsonse to ${actor.name} with a JSON object in the format: { "analysis": "your analysis here", "rating": 8 }`
     }
   ];
 
-  const response = await chatgpt(messages);
+  const response = (await chatgpt(messages)).choices[0].message.content
+    // peak programming
+    .replace(/^```json|```$/g, "");
+
+  console.log(response);
 
   try {
-    const parsedResponse = JSON.parse(response.data.choices[0].message.content);
+    const parsedResponse = JSON.parse(response);
     return {
       analysis: parsedResponse.analysis,
       rating: parsedResponse.rating,
@@ -74,18 +74,18 @@ export async function getCompatibilityAnalysis(actor, interest) {
   }
 }
 
-export async function getSummary(text) {
+export async function getSummary(text, length = 100) {
   const messages = [
     {
       role: "system",
-      content: "You are a summarization assistant."
+      content: "You are a summarization assistant focused on making text short like you are texting someone."
     },
     {
       role: "user",
-      content: `Please summarize the following text:\n${text}`
+      content: `Summarize the following text under ${length} words:\n${text}`
     }
   ];
 
   const response = await chatgpt(messages);
-  return response.data.choices[0].message.content; // Adjust based on your response structure
+  return response.choices[0].message.content; // Adjust based on your response structure
 }

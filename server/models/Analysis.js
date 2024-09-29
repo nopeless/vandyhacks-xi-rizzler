@@ -6,4 +6,5 @@ export default connection.model("Analysis", {
   summary: String, // summary of the evaluation
   evaluation: String, // evaluation of the relationship
   rating: Number, // 0 to 10 scale of evaluation rating
+  hash: String,
 });
