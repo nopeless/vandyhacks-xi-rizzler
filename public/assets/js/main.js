@@ -83,4 +83,17 @@ function createStarRating(rating) {
   return `<div class="star-rating">${starsHtml}</div>`;
 }
 
+async function fixJoinAnchor() {
+  if (await window.user) {
+    const anchors = document.querySelectorAll("a[href=\"/sign-up\"]");
 
+    [...anchors].forEach(
+      a => {
+        a.href = "/user";
+        a.innerText = "My Page";
+      }
+    );
+  }
+}
+
+fixJoinAnchor();

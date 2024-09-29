@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="/assets/css/main.css" />
-  <title>SOCIAi</title>
+  <title>SociAI</title>
 </head>
 <body>
   <!-- bg stuff -->
@@ -75,20 +75,25 @@
       <article class="post">
         <header>
           <div class="title">
-            <h2><a href="#hero">SOCIAi, a new shift</a></h2>
-            <p>Lorem ipsum dolor amet nullam consequat etiam feugiat</p>
+            <h2><a href="#hero">SociAI, a new shift</a></h2>
+            <p>People tremble in fear as they blindly belive that technology will replace social connections.
+              However, we have a different vision.
+              Step into the future of social networking with SociAI.
+              Using advanced AI-powered compatibility checks, we help you find and connect with like-minded individuals effortlessly.
+              Experience smarter, more meaningful connections!
+            </p>
           </div>
           <div class="meta">
             <time class="published" datetime="2015-11-01">September 29, 2024</time>
             <a href="/user?pick=nopeless" class="author"><span class="name">&#x0059;&#x0075;&#x006C;&#x0020;&#x004C;&#x0065;&#x0065;</span><img src="images/nopeless.png" alt="" /></a>
           </div>
         </header>
-        <img src="images/post-banner.jpg" style="aspect-ratio: 7 / 1; width: 100%;" alt="" />
+        <img src="/images/post-banner.jpg" style="aspect-ratio: 7 / 1; width: 100%;" alt="" />
         <div class="content-inner">
           <p>We do stuff</p>
           <footer>
             <ul class="actions">
-              <li><a href="single.html" class="button large">ABOUT US</a></li>
+              <li><a href="/about" class="button large">ABOUT US</a></li>
             </ul>
             <ul class="stats">
               <!-- <li><a href="#">General</a></li> -->
@@ -100,6 +105,8 @@
       </article>
 
       <article class="post">
+        <h2>People</h2>
+
         <div id="people" class="content-inner">  
           <div class="profile-box">
             <div>
@@ -119,8 +126,8 @@
     <!-- About -->
     <section class="blurb">
       <div class="content-inner">
-        <h2>About</h2>
-        <p>Mauris neque quam, fermentum ut nisl vitae, convallis maximus nisl. Sed mattis nunc id lorem euismod amet placerat. Vivamus porttitor magna enim, ac accumsan tortor cursus at phasellus sed ultricies.</p>
+        <h2>Is this cool enough?</h2>
+        <p>We strive for a better society where people can benefit from advances of AI in their social life</p>
         <ul class="actions">
           <li><a href="/about" class="button">Learn More</a></li>
           <li><a href="/sign-up" class="button">Sign Up</a></li>
@@ -137,7 +144,7 @@
         <li><a href="#" class="icon solid fa-rss"><span class="label">RSS</span></a></li>
         <li><a href="#" class="icon solid fa-envelope"><span class="label">Email</span></a></li>
       </ul>
-      <p class="copyright">&copy; SociAi. Design: <a href="#">HTML5 UP</a>. Images: <a href="http://unsplash.com">Unsplash</a>.</p>
+      <p class="copyright">&copy; SociAI. Design: <a href="#">HTML5 UP</a>. Images: <a href="http://unsplash.com">Unsplash</a>.</p>
     </section>
   </div>
 
@@ -152,11 +159,28 @@
 
   <script>
     (async () => {
-      const r = await fetch('/api/users?count=20').then(r => r.json());
+      const users = await fetch('/api/users?count=20').then(r => r.json());
 
       const people = document.getElementById("people");
 
-      r.forEach()
+      const first = people.querySelector(".profile-box");
+
+      const peopleEls = [first];
+
+      for (let i = 1; i < users.length; i++) {
+        const e = first.cloneNode(true);
+        peopleEls.push(e);
+        first.parentElement.appendChild(e);
+      }
+
+      users.forEach((u, i) => {
+        const el = peopleEls[i];
+
+        el.querySelector('a').href = "/user?pick=" + u.username;
+        el.querySelector('img').src = u.profilePicture;
+        el.querySelector('.username').innerText = u.name;
+        el.querySelector('p').innerText = u.description.substring(0, 50);
+      })      
     })();
   </script>
 </body>
