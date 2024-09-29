@@ -53,7 +53,7 @@ export async function getCompatibilityAnalysis(actor, interest) {
       - Animals: ${interest.animals}
       - Foods: ${interest.foods}
 
-      Please put your repsonse to ${actor.name} with a JSON object in the format and be extreme with rating score: { "analysis": "your analysis here", "rating": 5 }`
+      Please put your repsonse to ${actor.name} with a JSON object in the format and be extreme with rating score: { "analysis": "your analysis here", "rating": <number> }`
     }
   ];
 

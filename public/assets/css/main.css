@@ -149,7 +149,7 @@ input[type=file]::file-selector-button {
   }
 }
 
-@media(max-width: 700px) {
+@media(max-width: 800px) {
   #profile-pic-explanation {
     grid-template-columns: 1fr;
   }
