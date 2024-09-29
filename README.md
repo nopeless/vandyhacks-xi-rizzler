@@ -1,4 +1,3 @@
-
 # SociAI
 
 > Used template from [html5up.net/future-imperfect](https://html5up.net/future-imperfect)
