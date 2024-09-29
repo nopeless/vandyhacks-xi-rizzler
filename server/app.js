@@ -24,6 +24,8 @@ app.use("/api", api);
 app.use("/", express.static("public", {
   redirect: false,
   fallthrough: true,
+  extensions: ["html"],
+  maxAge: 0,
 }));
 
 app.use("/", (req, res) => {
