@@ -4,3 +4,49 @@
 
 /* import font */
 @import url("https://fonts.googleapis.com/css?family=Source+Sans+Pro:400,700|Raleway:400,800,900");
+
+#hero-background {
+  position: absolute;
+  height: 500px;
+  width: 100%;
+  z-index: -1;
+
+  background:
+    linear-gradient(to bottom, rgba(0, 0, 0, 0) 85%, #F4F4F4 100%),
+    url("/images/vandy-social-picture.jpg");
+
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+nav.links>ul {
+  overflow: hidden;
+}
+
+#intro {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 1rem;
+}
+
+#intro .logo {
+  margin-right: 2rem;
+  margin-bottom: 4rem;
+}
+
+#intro header {
+  margin-bottom: 3rem;
+}
+
+#intro header h2,
+#intro header p {
+  color: white;
+  position: relative;
+}
+
+#intro img {
+  max-height: 100px;
+  /* You can adjust this value based on your design */
+}
