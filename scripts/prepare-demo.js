@@ -237,7 +237,7 @@ async function generateMockUsers() {
   const defaultProfilePicture = await fs.readFile(defaultProfilePicturePath);
   const defaultProfilePictureBase64 = "data:image/jpeg;base64," + defaultProfilePicture.toString("base64");
 
-  for (let i = 0; i < 50; i++) {
+  for (let i = 0; i < 20; i++) {
     const username = faker.internet.userName();
     const personality = personalities[i % personalities.length]; // Cycle through personality types
 

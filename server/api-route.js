@@ -209,7 +209,16 @@ router.get("/users", asyncHandler(async (req, res) => {
 
   if (count > limit) return res.status(400).send(`Request exceeds limit of ${limit} users`);
 
-  const users = await User.aggregate([{ $sample: { size: count } }]);
+  const { sid } = req.cookies;
+
+  const users = await User.aggregate([
+    {
+      $match: sid ? { sid: { $ne: sid } } : {}
+    },
+    {
+      $sample: { size: count }
+    }
+  ]);
 
   res.json(users.map(u => {
     delete u.sid;
@@ -217,6 +226,7 @@ router.get("/users", asyncHandler(async (req, res) => {
     return u;
   }));
 }));
+
 
 router.get("/analysis", asyncHandler(async (req, res) => {
   // check for authentication
@@ -267,7 +277,7 @@ router.get("/analysis", asyncHandler(async (req, res) => {
     // TODO
     evaluation: compatibilityReport.analysis,
     summary: summary,
-    rating: 5,
+    rating: compatibilityReport.rating,
     hash,
   });
 

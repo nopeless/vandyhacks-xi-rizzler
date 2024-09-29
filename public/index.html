@@ -18,7 +18,7 @@
         <ul>
           <li><a href="/about">About</a></li>
           <li><a href="/sign-up">Join</a></li>
-          <li><a href="/#people">People</a></li>
+          <li><a href="#people">People</a></li>
           <li><a href="/about#tos">Terms of Service</a></li>
         </ul>
       </nav>
@@ -72,9 +72,6 @@
     </section>
 
     <div id="main">
-      
-
-    <!-- Post -->
       <article class="post">
         <header>
           <div class="title">
@@ -87,7 +84,7 @@
           </div>
         </header>
         <img src="images/post-banner.jpg" style="aspect-ratio: 7 / 1; width: 100%;" alt="" />
-        <div class="content-inner">  
+        <div class="content-inner">
           <p>We do stuff</p>
           <footer>
             <ul class="actions">
@@ -99,6 +96,22 @@
               <li><a class="icon solid fa-comment">128</a></li>
             </ul>
           </footer>
+        </div>
+      </article>
+
+      <article class="post">
+        <div id="people" class="content-inner">  
+          <div class="profile-box">
+            <div>
+              <a href="">
+                <img src="/images/avatar.jpg" style="max-width: 120px; max-height: 120px;" alt="Profile Picture" />
+              </a>
+            </div>
+            <div>
+              <h5 class="username">Loading</h5>
+              <p>Loading</p>
+            </div>
+          </div>
         </div>
       </article>
     </div>
@@ -124,7 +137,7 @@
         <li><a href="#" class="icon solid fa-rss"><span class="label">RSS</span></a></li>
         <li><a href="#" class="icon solid fa-envelope"><span class="label">Email</span></a></li>
       </ul>
-      <p class="copyright">&copy; Untitled. Design: <a href="http://html5up.net">HTML5 UP</a>. Images: <a href="http://unsplash.com">Unsplash</a>.</p>
+      <p class="copyright">&copy; SociAi. Design: <a href="#">HTML5 UP</a>. Images: <a href="http://unsplash.com">Unsplash</a>.</p>
     </section>
   </div>
 
@@ -136,5 +149,15 @@
   <script src="assets/js/util.js"></script>
   <script src="assets/js/imperfect.js"></script>
   <script src="assets/js/main.js"></script>
+
+  <script>
+    (async () => {
+      const r = await fetch('/api/users?count=20').then(r => r.json());
+
+      const people = document.getElementById("people");
+
+      r.forEach()
+    })();
+  </script>
 </body>
 </html>

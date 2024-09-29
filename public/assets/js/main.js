@@ -29,7 +29,7 @@ function smartForm(form, cb) {
 function popError(msg) {
   console.error(msg);
 
-  // TODO
+
   alert(msg);
 }
 
@@ -56,11 +56,31 @@ function registerLoginOutButton() {
 
 registerLoginOutButton();
 
-function registerSearchField() {
-  document.querySelector("#search > input").addEventListener("keydown", (event) => {
-    if (event.key === "Enter") {
-      document.querySelector("#search").submit();
-      return false;
-    }
-  });
+/**
+ * Returns raw html
+ */
+function createStarRating(rating) {
+  rating = Math.max(0, Math.min(10, rating));
+
+  const fullStars = Math.floor(rating / 2);
+  const halfStars = rating % 2;
+  const emptyStars = 5 - fullStars - halfStars;
+
+  let starsHtml = "";
+
+  for (let i = 0; i < fullStars; i++) {
+    starsHtml += "<i class=\"fas fa-star\"></i>";
+  }
+
+  for (let i = 0; i < halfStars; i++) {
+    starsHtml += "<i class=\"fas fa-star-half-alt\"></i>";
+  }
+
+  for (let i = 0; i < emptyStars; i++) {
+    starsHtml += "<i class=\"far fa-star\"></i>";
+  }
+
+  return `<div class="star-rating">${starsHtml}</div>`;
 }
+
+

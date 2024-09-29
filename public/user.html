@@ -66,7 +66,10 @@
           <h2>Today's Pick</h2>
           
           <div class="grid" id="profile-pic-explanation">
-            <img id="profile-pic" src="images/pic09.jpg" alt="Profile Picture" />
+            <div>
+              <img id="profile-pic" src="/images/avatar.jpg" alt="Profile Picture" />
+              <div class="rating"></div>
+            </div>
             <div id="profile-explanation">
               <div id="profile-explanation-description">
                 <h3>Description</h3>
@@ -99,15 +102,28 @@
 
     <section id="more-people" class="grid">
       <div class="profile-box">
-        <div class="">
-          <img src="images/pfp1.jpg" style="max-width: 100px; max-height: 100px;" alt="Profile Picture" />
-          <!-- add stars later -->
+        <div>
+          <a href="">
+            <img src="/images/avatar.jpg" style="max-width: 120px; max-height: 120px;" alt="Profile Picture" />
+          </a>
+          <div class="rating"></div>
         </div>
         <div>
           <h5 class="username">Loading</h5>
           <p>Loading</p>
         </div>
       </div>
+    </section>
+
+    <section id="footer">
+      <ul class="icons">
+        <li><a href="#" class="icon brands fa-twitter"><span class="label">Twitter</span></a></li>
+        <li><a href="#" class="icon brands fa-facebook-f"><span class="label">Facebook</span></a></li>
+        <li><a href="#" class="icon brands fa-instagram"><span class="label">Instagram</span></a></li>
+        <li><a href="#" class="icon solid fa-rss"><span class="label">RSS</span></a></li>
+        <li><a href="#" class="icon solid fa-envelope"><span class="label">Email</span></a></li>
+      </ul>
+      <p class="copyright">&copy; SociAi. Design: <a href="#">HTML5 UP</a>. Images: <a href="http://unsplash.com">Unsplash</a>.</p>
     </section>
   </div>
 
@@ -144,6 +160,7 @@
       const pfp = document.getElementById("profile-pic");
       const descriptionEl = document.getElementById("pxd-text");
       const analysisEl = document.getElementById("pxa-text");
+      const rating = pfp.parentElement.querySelector(".rating");
   
       pfp.src = todaysPickUser.profilePicture;
       descriptionEl.innerText = `
@@ -156,6 +173,8 @@
         Favorite Animals: ${todaysPickUser.animals}
         Favorite Foods: ${todaysPickUser.foods}
       `;
+
+      rating.innerHTML = createStarRating(todaysPickAnalysis.rating);
 
       if (await window.user) {
         analysisEl.innerText = todaysPickAnalysis ? todaysPickAnalysis.evaluation : "Cannot retrieve analysis";
@@ -180,6 +199,8 @@
         const el = otherPeopleEls[i];
 
         el.querySelector('img').src = u.profilePicture;
+        el.querySelector('a').href = '/user?pick=' + u.username;
+
         el.querySelector('.username').innerText = u.name;
         
         if (await window.user) {
@@ -187,8 +208,10 @@
             credentials: "include"
           }).then(r => r.status !== 200 ? null : r.json());
           
-          if (analysis)
+          if (analysis) {
             el.querySelector('p').innerText = analysis.summary;
+            el.querySelector('.rating').innerHTML = createStarRating(analysis.rating);
+          }
         } else {
           const user = await fetch(`/api/user?username=${u.username}`, {
             credentials: "include"

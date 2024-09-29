@@ -33,7 +33,8 @@ export async function getCompatibilityAnalysis(actor, interest) {
     },
     {
       role: "user",
-      content: `${actor.name} is asking how ${interest.name} is. Below are their portfolios. Example: You might like their passion for coding. Do not address either person by their names. Use pronouns. Provide a JSON response with 'analysis' (string) and 'rating' (number) between 0-10:
+      content: `${actor.name} is asking you how ${interest.name} is. Below are their portfolios. Talk to ${actor.name} about how ${interest.name} is. Be personal with your statements, such as "I think". 
+
       ${actor.name}:
       - Age: ${actor.age}
       - Gender: ${actor.gender}
@@ -52,7 +53,7 @@ export async function getCompatibilityAnalysis(actor, interest) {
       - Animals: ${interest.animals}
       - Foods: ${interest.foods}
 
-      Please put your repsonse to ${actor.name} with a JSON object in the format: { "analysis": "your analysis here", "rating": 8 }`
+      Please put your repsonse to ${actor.name} with a JSON object in the format and be extreme with rating score: { "analysis": "your analysis here", "rating": 5 }`
     }
   ];
 
