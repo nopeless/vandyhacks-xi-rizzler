@@ -87,9 +87,9 @@
       <!-- Search Area -->
       <section id="search-area">
         <h2>Find Your Match</h2>
-        <form>
-          <label for="description">Describe the person you want to find:</label>
-          <input type="text" id="description" name="description" placeholder="E.g., funny, adventurous, etc." />
+        <form action="/user">
+          <label for="interest">Describe the person you want to find using comma delimited keywords</label>
+          <input type="text" id="interest" name="interest" placeholder="E.g., funny, adventurous, etc." />
           <div style="width: 100%; height: 10px;"></div>
           <button type="submit">Search</button>
         </form>
@@ -138,11 +138,17 @@
     (async () => {
       const urlParams = new URLSearchParams(window.location.search);
       const pick = urlParams.get('pick');
+      const interest = urlParams.get('interest');
 
-      const r = await fetch('/api/users?count=5').then(r => r.json());
+      const r = await fetch('/api/users?count=5' + (interest ? '&interest=' + encodeURIComponent(interest) : '')).then(r => r.json());
       console.log(r);
 
       const otherUsers = r;
+
+      if (otherUsers.length === 0) {
+        alert("No users were found");
+        window.location = "/user";
+      }
 
       todaysPickUser = pick
         ? await fetch(`/api/user?username=${pick}`).then(r => r.json())

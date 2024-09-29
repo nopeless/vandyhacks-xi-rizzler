@@ -199,7 +199,9 @@ router.get("/self", asyncHandler(async (req, res) => {
 
   return res.json(user && user.toJSON());
 }));
-
+function escapeRegExp(string) {
+  return string.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"); // $& means the whole matched string
+}
 router.get("/users", asyncHandler(async (req, res) => {
   const limit = 100;
 
@@ -211,9 +213,16 @@ router.get("/users", asyncHandler(async (req, res) => {
 
   const { sid } = req.cookies;
 
+  const { interest } = req.query;
+
+  interest && console.log("interest regex: " + interest.split(",").map(s => escapeRegExp(s.trim())).join("|"));
+
   const users = await User.aggregate([
     {
-      $match: sid ? { sid: { $ne: sid } } : {}
+      $match: {
+        ...(sid ? { sid: { $ne: sid } } : {}),
+        ...(interest ? { description: { $regex: interest.split(",").map(s => escapeRegExp(s.trim())).join("|"), $options: "i" } } : {}),
+      }
     },
     {
       $sample: { size: count }
