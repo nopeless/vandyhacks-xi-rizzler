@@ -1,3 +1,5 @@
+import path from "node:path";
+
 import { Router } from "express";
 import multer from "multer";
 import asyncHandler from "express-async-handler";
@@ -17,10 +19,12 @@ const uploadProfilePicture = multer({
   limits: { fileSize: 5 * 1024 * 1024 }, // 5MB
 
   fileFilter: (req, file, cb) => {
+    console.log(`[multer] filter accepting ${file.originalname} of mime type ${file.mimetype}`);
+
     const fileTypes = /^(jpeg|jpg|png)$/i;
 
-    const extname = fileTypes.match(file.originalname);
-    const mimeType = fileTypes.test(file.mimetype);
+    const extname = path.extname(file.originalname).substring(1).match(fileTypes);
+    const mimeType = file.mimetype.replace(/^image\//, "").match(fileTypes);
 
     if (extname && mimeType) {
       return cb(null, true);
@@ -30,11 +34,11 @@ const uploadProfilePicture = multer({
   }
 }).single("profilePicture");
 
-function imageToBase64(file, ext) {
+function imageToBase64(file, mime) {
   // FIXME
-  const base64 = file.toString("base64");
+  const base64 = file.buffer.toString("base64");
 
-  return `data:image/${ext};base64,${base64}`;
+  return `data:${mime};base64,${base64}`;
 }
 
 function setSidCookie(res, sid) {
@@ -58,27 +62,57 @@ router.post("/login", asyncHandler(async (req, res) => {
 
   // check for password hash
 
-  if (!validatePassword(password, user.hash)) return res.status(403).send("Incorrect password");
+  if (!await validatePassword(password, user.hash)) return res.status(403).send("Incorrect password");
 
   // generate new session
-  const sid = generateSid();
+  const sid = await generateSid();
 
   setSidCookie(res, sid);
 
   // redirect them to their user page
-  res.redirect("/user");
+  res.redirect("/user?signup-success=1");
 }));
 
+router.post("/logout", asyncHandler(async (req, res) => {
+  const sid = req.cookies.sid;
+
+  if (!sid) {
+    return res.status(400).send("No session found");
+  }
+
+  await User.updateOne({ sessionId: sid }, { sessionId: null });
+
+  res.clearCookie("sid", { httpOnly: true });
+
+  res.redirect("/logged-out");
+}));
+
+
+
 router.post("/create-user", uploadProfilePicture, asyncHandler(async (req, res) => {
-  const { username, password } = req.body;
+  let { username, password } = req.body;
+
+  username = username?.trim();
+
+  const { edit } = req.query;
 
   const profilePicture = req.file;
 
   if (!profilePicture) return res.status(400).send("Missing profile picture");
 
+  const findByUsername = await User.findOne({ username });
+
   // check username clash
-  if (await User.findOne({ username }))
+  if (!edit && findByUsername)
     return res.status(400).send("Username already exists");
+
+  // validate
+  if (!username) return res.status(400).send("Username cannnot be empty");
+
+  if (!edit) {
+    if (!username.match(/^[_a-zA-Z]\w*$/))
+      return res.status(400).send("Invalid characters in username. Must be _, letters, or digits");
+  }
 
   const fields = [
     "name",
@@ -91,28 +125,39 @@ router.post("/create-user", uploadProfilePicture, asyncHandler(async (req, res) 
     "foods",
   ];
 
-  const sid = generateSid();
+  const sid = await generateSid();
 
-  const userObject = {
-    username,
-    hash: hashPassword(password),
-    sid,
-
-    createdAt: Date.now(),
-    profilePicture: "", // TODO
-
-    // ... fields
-  };
+  const fieldsObject = {};
 
   for (const field of fields) {
     const bodyData = req.body[field];
     if (bodyData === undefined) res.status(400).send(`Missing field: '${field}'`);
 
-    userObject[field] = bodyData;
+    fieldsObject[field] = bodyData;
+  }
+
+  if (edit) {
+    // validate session
+    if (!req.cookies.sid) return req.status(403).send("Not logged in");
+    if (req.cookies.sid !== findByUsername.sid) return req.status(403).send("Not authorized");
+
+    // there is no double fetch here
+    await findByUsername.updateOne(userObject);
+
+    return res.send("Successfully updated profile");
   }
 
   // create user object
-  const user = await User.create(userObject);
+  const user = await User.create({
+    ...fieldsObject,
+
+    username,
+    hash: await hashPassword(password),
+    sid,
+
+    createdAt: Date.now(),
+    profilePicture: imageToBase64(profilePicture, profilePicture.mimetype), // TODO
+  });
 
   if (!user) return res.status(500).send("Server error: could not create user");
 
@@ -121,36 +166,53 @@ router.post("/create-user", uploadProfilePicture, asyncHandler(async (req, res) 
   res.redirect("/user");
 }));
 
-router.get("/user-info", asyncHandler(async (req, res) => {
+router.get("/user", asyncHandler(async (req, res) => {
   const { username } = req.query;
+
+  if (!username) return res.status(400).send("missing username");
 
   const user = await User.findOne({ username });
 
-  if (!user) return res.status(404).send(`No user exists with username '${username}'`);
+  res.json(user && user.toJSON());
+}));
 
-  // Got user, return as json
+router.get("/self", asyncHandler(async (req, res) => {
+  const { sid } = req.cookies;
 
-  res.json(user.toJSON());
+  if (!sid) return res.json(null);
+
+  const user = await User.findOne({ sid });
+
+  return user && user.toJSON();
 }));
 
 router.get("/users", asyncHandler(async (req, res) => {
   const limit = 100;
 
-  const count = req.query.count ?? 10;
+  const count = +req.query.count ?? 10;
+
+  if (typeof count !== "number") return res.status(400).send("count must be a number");
 
   if (count > limit) return res.status(400).send(`Request exceeds limit of ${limit} users`);
 
-  const users = await User.aggregate(([{ $sample: { size: count } }]));
+  const users = await User.aggregate([{ $sample: { size: count } }]);
 
-  res.json(users.map(u => u.toJSON()));
+  res.json(users.map(u => {
+    delete u.sid;
+    delete u.hash;
+    return u;
+  }));
 }));
 
 router.get("/analysis", asyncHandler(async (req, res) => {
   // check for authentication
   const { sid } = req.cookies;
-  const authenticated = sid && await User.findOne({ sid });
+  let user;
+  const authenticated = sid && (user = await User.findOne({ sid }));
 
-  const { actor, interest } = req.query;
+  let { actor, interest } = req.query;
+
+  if (!actor && user) actor = user;
 
   const analysis = await Analysis.findOne({
     actor,
@@ -172,7 +234,7 @@ router.get("/analysis", asyncHandler(async (req, res) => {
     rating: 5,
   });
 
-  res.json(newAnalysis);
+  res.json(newAnalysis.toJSON());
 }));
 
 export default router;
